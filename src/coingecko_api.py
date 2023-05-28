@@ -98,15 +98,15 @@ def get_market_cap(coin_id):
     market_cap = coin_data["market_data"]["market_cap"]["usd"]
     return market_cap
 
-def handle_price_json(price_json):
+def handle_ts_json(price_json, market_data_type="prices"):
     print(price_json.keys())
-    data = price_json["prices"]
-    df = pd.DataFrame(data, columns=["timestamp", "price"])
-    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms").dt.strftime('%m-%d-%y')
+    data = price_json[market_data_type]
+    df = pd.DataFrame(data, columns=["timestamp", "value"])
+    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
     print(df["timestamp"])
     return df
 
-def historical_price(coin_id, pair="usd", days="30"):
+def historical_market_data(coin_id, pair="usd", days="30"):
     url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart?vs_currency={pair}&days={days}"
     response = requests.get(url).json()
     if 'status' in response.keys():

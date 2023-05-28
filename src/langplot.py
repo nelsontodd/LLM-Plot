@@ -69,7 +69,7 @@ class TimeSeriesPlot(LangPlot):
             #data_points[asset] = {}
             for data in self.required_asset_data[asset]:
                 #data_points[asset][data] = get_asset_data_from_coingecko(asset, data)
-                data_list.append(get_asset_data_from_coingecko(asset, data))
+                data_list.append(get_asset_data_from_coingecko(asset, data.upper()))
         print(data_list)
         return data_list#data_points
 
