@@ -9,11 +9,10 @@ import plotly.graph_objects as go
 import plotly.io as pio
 
 class LangPlot:
-    def __init__(self, prompt, instructions, theme='ggplot2', model="gpt-3.5-turbo"):
+    def __init__(self, prompt, instructions, model="gpt-3.5-turbo"):
         self.prompt = prompt
         self.instructions = instructions
         self.model=model
-        pio.templates.default = theme
         self.plot_type = self.instructions['PLOT_TYPE']
         self.plot_duration = self.instructions['PLOT_DURATION']
         self.were_dates_specified = self.instructions['SPECIFIC_DATES_SPECIFIED']
@@ -33,8 +32,8 @@ class PiePlot(LangPlot):
 
 class TimeSeriesPlot(LangPlot):
 
-    def __init__(self, prompt,instructions, theme='ggplot2', model="gpt-3.5-turbo"):
-        super().__init__(prompt,instructions, theme=theme, model=model)
+    def __init__(self, prompt,instructions, model="gpt-3.5-turbo"):
+        super().__init__(prompt,instructions, model=model)
         self.systemprompt = constants.TIMESERIES_PLOTLY_SPEC
         rawtext = utils.promptGPT(self.systemprompt, prompt, self.model)
         with open("raw.json", "w") as f:
@@ -73,8 +72,9 @@ class TimeSeriesPlot(LangPlot):
         print(data_list)
         return data_list#data_points
 
-    def plot(self):
+    def plot(self, theme="plotly_dark"):
         # Using Plotly to generate plots
+        pio.templates.default = theme
         asset_data = self.fetch_data()
         #for index,asset in enumerate(asset_data.keys()):
             #df = asset_data[asset]["PRICE"]
@@ -122,13 +122,19 @@ class PlotterFactory:
             instructions_json['ASSETS'] = [instructions_json['ASSETS']]
         if 'ether' in list(map(lambda x: x.lower(), instructions_json['ASSETS'])):
             instructions_json['ASSETS'][list(map(lambda x: x.lower(), instructions_json['ASSETS'])).index('ether')] = 'ETH'
+        if 'ether' in instructions_json['REQUIRED_ASSET_DATA'].keys():
+            instructions_json['REQUIRED_ASSET_DATA']['ETH'] = my_dict.pop('ether')
+        if 'Ether' in instructions_json['REQUIRED_ASSET_DATA'].keys():
+            instructions_json['REQUIRED_ASSET_DATA']['ETH'] = my_dict.pop('Ether')
+        if 'ETHER' in instructions_json['REQUIRED_ASSET_DATA'].keys():
+            instructions_json['REQUIRED_ASSET_DATA']['ETH'] = my_dict.pop('ETHER')
         return instructions_json
 
-    def create_plotter(self, theme='ggplot2'):
+    def create_plotter(self):
         plot_classes = {'BAR': BarPlot, 'PIE': PiePlot, 'TIME SERIES': TimeSeriesPlot}
         
         if self.instructions['PLOT_TYPE'] in plot_classes:
-            return plot_classes[self.instructions['PLOT_TYPE']](self.initprompt, self.instructions, theme=theme, model=self.model)
+            return plot_classes[self.instructions['PLOT_TYPE']](self.initprompt, self.instructions, model=self.model)
         else:
             raise ValueError("""Error: ambiguous plot definition. Could not determine plot
             type.""")
