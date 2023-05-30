@@ -80,7 +80,10 @@ def fuzzy_find(s, strlist):
 
     return process.extractOne(s, strlist, scorer=custom_scorer)
 
-def match_coin_id(coin_name):
+def match_coin_id(coin_name, exceptions=["WHOLE PORTFOLIO"]):
+    #Janky
+    if coin_name in exceptions:
+        return coin_name
     with open(utils.data_rel_path('{}.json'.format("coin_ids")), "r") as f:
         coin_ids = json.load(f)
     ids = [coin['id'] for coin in coin_ids]
@@ -102,8 +105,7 @@ def handle_ts_json(price_json, market_data_type="prices"):
     print(price_json.keys())
     data = price_json[market_data_type]
     df = pd.DataFrame(data, columns=["timestamp", "value"])
-    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
-    print(df["timestamp"])
+    df.index = pd.to_datetime(df["timestamp"], unit="ms")
     return df
 
 def historical_market_data(coin_id, pair="usd", days="30"):
