@@ -41,6 +41,7 @@ class PiePlot(LangPlot):
         plotly_spec = json.loads(rawtext)
         self.plot_data   = plotly_spec['data']
         self.plot_layout = plotly_spec['layout']
+
     def plot(self, theme="plotly_dark"):
         pio.templates.default = theme
         def remove_empty_values(my_dict):
@@ -56,6 +57,7 @@ class PiePlot(LangPlot):
                 layout=self.plot_layout)
         pio.write_image(fig,
                 utils.output_rel_path('{}.png'.format("INSERT_USER_NAME_")))
+        return utils.output_rel_path('{}.png'.format("INSERT_USER_NAME_"))
 
 class TimeSeriesPlot(LangPlot):
 
@@ -115,24 +117,29 @@ class TimeSeriesPlot(LangPlot):
                 return True
             else:
                 return False
-        if wallet_trace_first():
-            df = wallet.tail(int(self.plot_duration.days))
-            self.plot_data[index]["x"] = df.index
-            self.plot_data[index]["y"] = df['value']
+        if wallet:
+            if wallet_trace_first():
+                df = wallet.tail(int(self.plot_duration.days))
+                self.plot_data[index]["x"] = df.index
+                self.plot_data[index]["y"] = df['value']
 
-            for index, df in enumerate(coingecko):
-                self.plot_data[1+index]["x"] = df.index
-                self.plot_data[1+index]["y"] = df['value']
+                for index, df in enumerate(coingecko):
+                    self.plot_data[1+index]["x"] = df.index
+                    self.plot_data[1+index]["y"] = df['value']
+            else:
+                num_external = 0
+                for index, df in enumerate(coingecko):
+                    self.plot_data[index]["x"] = df.index
+                    self.plot_data[index]["y"] = df['value']
+                    num_external +=1
+                df = wallet.tail(int(self.plot_duration.days))
+                self.plot_data[num_external]["x"] = df.index
+                self.plot_data[num_external]["y"] = df['value']
         else:
-            num_external = 0
             for index, df in enumerate(coingecko):
                 self.plot_data[index]["x"] = df.index
                 self.plot_data[index]["y"] = df['value']
-                num_external +=1
-            df = wallet.tail(int(self.plot_duration.days))
-            print(num_external)
-            self.plot_data[num_external]["x"] = df.index
-            self.plot_data[num_external]["y"] = df['value']
+
         self.plot_layout['yaxis'].update({'showgrid':False})
         self.plot_layout['xaxis'].update({'showgrid':False})
         if 'yaxis2' in self.plot_layout.keys():
@@ -140,7 +147,7 @@ class TimeSeriesPlot(LangPlot):
         fig = go.Figure(data=self.plot_data, layout=self.plot_layout)
         pio.write_image(fig,
                 utils.output_rel_path('{}.png'.format("INSERT_USER_NAME_")))
-        return 0
+        return utils.output_rel_path('{}.png'.format("INSERT_USER_NAME_"))
 
 
 class PlotterFactory:
