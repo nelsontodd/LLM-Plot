@@ -3,7 +3,7 @@ import time
 import json
 import requests
 import openai
-import constants
+from . import constants
 import tiktoken
 import math
 twitter = "https://api.twitter.com{}"

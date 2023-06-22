@@ -1,14 +1,14 @@
 import json
-import utils
-import constants
-import coingecko_api
+from . import utils
+from . import constants
+from . import coingecko_api
 from datetime import timedelta
 from datetime import datetime
 import random
 import plotly.graph_objects as go
 import plotly.io as pio
-import arkham_api
-import webdrive
+from . import arkham_api
+from . import webdrive
 
 class LangPlot:
     def __init__(self, prompt, instructions, model="gpt-3.5-turbo", address=None):
